@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "masenocu";
+$dbname = "elibrary_db";
 
 // Create a connection
 $conn = new mysqli($servername, $username, $password, $dbname);

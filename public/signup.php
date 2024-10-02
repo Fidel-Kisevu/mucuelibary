@@ -4,7 +4,7 @@ include('../includes/db_connection.php'); // Adjusted for your project
 
 // Initialize variables and error messages
 $error_reg = $error_email = $error_phone = $error_pw = $error_pw_confirm = "";
-$s_msg = $error_m = "";
+$error_m = "";
 $is_valid = true;
 $success = false; // Variable to track successful registration
 
@@ -17,7 +17,7 @@ if (isset($_POST['submit'])) {
     $email = mysqli_real_escape_string($conn, trim($_POST['email']));
     $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
     $sem = $_POST['sem'];
-    $session = mysqli_real_escape_string($conn, trim($_POST['session']));
+    $course = mysqli_real_escape_string($conn, trim($_POST['course']));
     $regno = mysqli_real_escape_string($conn, trim($_POST['regno']));
     $address = mysqli_real_escape_string($conn, trim($_POST['address']));
 
@@ -27,7 +27,7 @@ if (isset($_POST['submit'])) {
         $is_valid = false;
     } else {
         // Check if the registration number already exists
-        $result = mysqli_query($conn, "SELECT * FROM users WHERE regno='$regno'");
+        $result = mysqli_query($conn, "SELECT * FROM students WHERE regno='$regno'");
         if (mysqli_num_rows($result) > 0) {
             $error_reg = "Registration number already exists";
             $is_valid = false;
@@ -39,7 +39,7 @@ if (isset($_POST['submit'])) {
         $is_valid = false;
     } else {
         // Check if email already exists
-        $result = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
+        $result = mysqli_query($conn, "SELECT * FROM students WHERE email='$email'");
         if (mysqli_num_rows($result) > 0) {
             $error_email = "Email already exists";
             $is_valid = false;
@@ -62,11 +62,11 @@ if (isset($_POST['submit'])) {
     // If valid, insert data into the database
     if ($is_valid) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT); // Hash the password
-
+    
         // Insert user data into the database
-        $query = "INSERT INTO users (name, password, email, phone, sem, session, regno, address, status) 
-                  VALUES ('$name', '$hashed_password', '$email', '$phone', '$sem', '$session', '$regno', '$address', 'active')";
-
+        $query = "INSERT INTO students (full_name, password, email, phone, sem, course, regno, address) 
+                  VALUES ('$name', '$hashed_password', '$email', '$phone', '$sem', '$course', '$regno', '$address')";
+    
         if (mysqli_query($conn, $query)) {
             $success = true; // Set success variable to true
             // Optionally redirect after registration
@@ -76,6 +76,7 @@ if (isset($_POST['submit'])) {
             $error_m = "Error: " . mysqli_error($conn);
         }
     }
+    
 }
 ?>
 
@@ -99,12 +100,12 @@ if (isset($_POST['submit'])) {
 
             <form action="" method="post">
                 <!-- Success and Error messages -->
-                <?php if ($s_msg): ?>
-                    <div class="alert alert-success"><?php echo $s_msg; ?></div>
-                <?php endif ?>
+                <?php if ($success): ?>
+                    <div class="alert alert-success">Registration successful! Please log in.</div>
+                <?php endif; ?>
                 <?php if ($error_m): ?>
                     <div class="alert alert-danger"><?php echo $error_m; ?></div>
-                <?php endif ?>
+                <?php endif; ?>
 
                 <div class="form-group mb-3">
                     <label for="name">Name <span class="text-danger">*</span></label>
@@ -115,8 +116,8 @@ if (isset($_POST['submit'])) {
                     <label for="regno">Registration No <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" placeholder="Registration No" name="regno" value="<?php echo isset($regno) ? $regno : ''; ?>" required />
                     <?php if ($error_reg): ?>
-                        <span class="error"><?php echo $error_reg; ?></span>
-                    <?php endif ?>
+                        <span class="error text-danger"><?php echo $error_reg; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group mb-3">
@@ -126,8 +127,8 @@ if (isset($_POST['submit'])) {
                         <span id="togglePassword" class="input-group-text" style="cursor: pointer;"><i class="fas fa-eye"></i></span>
                     </div>
                     <?php if ($error_pw): ?>
-                        <span class="error"><?php echo $error_pw; ?></span>
-                    <?php endif ?>
+                        <span class="error text-danger"><?php echo $error_pw; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group mb-3">
@@ -137,24 +138,24 @@ if (isset($_POST['submit'])) {
                         <span id="togglePasswordConfirm" class="input-group-text" style="cursor: pointer;"><i class="fas fa-eye"></i></span>
                     </div>
                     <?php if ($error_pw_confirm): ?>
-                        <span class="error"><?php echo $error_pw_confirm; ?></span>
-                    <?php endif ?>
+                        <span class="error text-danger"><?php echo $error_pw_confirm; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="email">Email <span class="text-danger">*</span></label>
                     <input type="email" class="form-control" placeholder="Email" name="email" value="<?php echo isset($email) ? $email : ''; ?>" required />
                     <?php if ($error_email): ?>
-                        <span class="error"><?php echo $error_email; ?></span>
-                    <?php endif ?>
+                        <span class="error text-danger"><?php echo $error_email; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="phone">Phone No <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" placeholder="Phone No" name="phone" value="<?php echo isset($phone) ? $phone : ''; ?>" required />
                     <?php if ($error_phone): ?>
-                        <span class="error"><?php echo $error_phone; ?></span>
-                    <?php endif ?>
+                        <span class="error text-danger"><?php echo $error_phone; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group mb-3">
@@ -173,54 +174,39 @@ if (isset($_POST['submit'])) {
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="session">Course of Study <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" placeholder="BSc Computer Science" name="session" value="<?php echo isset($session) ? $session : ''; ?>" required />
+                    <label for="course">Course of Study <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="BSc Computer Science" name="course" value="<?php echo isset($course) ? $course : ''; ?>" required />
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="address">Residence Area / Hostel <span class="text-danger">*</span></label>
-                    <textarea name="address" class="form-control" placeholder="Your Address" required><?php echo isset($address) ? $address : ''; ?></textarea>
+                    <label for="address">Address <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" placeholder="Address" name="address" value="<?php echo isset($address) ? $address : ''; ?>" required />
                 </div>
 
                 <button type="submit" name="submit" class="btn btn-primary">Register</button>
             </form>
 
-            <div class="text-center mt-3">
-                <p>Already have an account? <a href="login.php">Login here</a></p>
-            </div>
+            <p class="text-center mt-4">Already have an account? <a href="login.php">Login here</a>.</p>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    <script src="../assets/js/jquery.min.js"></script>
+    <script src="../assets/js/bootstrap.bundle.min.js"></script>
     <script>
         // Toggle password visibility
-        const togglePassword = document.getElementById('togglePassword');
-        const password = document.getElementById('password');
+        const togglePassword = (toggleButtonId, passwordInputId) => {
+            const toggleButton = document.getElementById(toggleButtonId);
+            const passwordInput = document.getElementById(passwordInputId);
+            toggleButton.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                toggleButton.querySelector('i').classList.toggle('fa-eye');
+                toggleButton.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        };
 
-        togglePassword.addEventListener('click', function () {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-            this.querySelector('i').classList.toggle('fa-eye');
-        });
-
-        // Toggle confirm password visibility
-        const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
-        const passwordConfirm = document.getElementById('password_confirm');
-
-        togglePasswordConfirm.addEventListener('click', function () {
-            const type = passwordConfirm.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordConfirm.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-            this.querySelector('i').classList.toggle('fa-eye');
-        });
-
-        // Show alert if registration was successful
-        <?php if ($success): ?>
-            alert("Registration successful! Please log in.");
-        <?php endif; ?>
+        togglePassword('togglePassword', 'password');
+        togglePassword('togglePasswordConfirm', 'password_confirm');
     </script>
 </body>
 </html>

@@ -8,13 +8,13 @@ $alert_type = "";
 
 // Handle the login form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $admission_number = $_POST['admission_number'];
+    $regno = $_POST['regno']; // Change from admission_number to regno
     $password = $_POST['password'];
 
-    // Prepare the SQL query to fetch the user from the database using admission number
-    $sql = "SELECT * FROM users WHERE regno = ?"; // Assuming 'regno' is the admission number field in your 'users' table
+    // Prepare the SQL query to fetch the user from the database using registration number
+    $sql = "SELECT * FROM students WHERE regno = ?"; // Assuming 'regno' is the registration number field in your 'students' table
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $admission_number);
+    $stmt->bind_param("s", $regno);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -25,8 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (password_verify($password, $user['password'])) {
             // Store user information in session
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['name'] = $user['name'];
-            
+            $_SESSION['name'] = $user['full_name']; // Change from 'name' to 'full_name' to match registration
+
             // Set success alert
             $alert = "Login successful! Welcome, " . $_SESSION['name'] . "!";
             $alert_type = "success";
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $alert_type = "danger";
         }
     } else {
-        $alert = "No user found with that admission number!";
+        $alert = "No user found with that registration number!";
         $alert_type = "danger";
     }
 }
@@ -56,10 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,600" rel="stylesheet">
     <link href="../assets/css/custom.css" rel="stylesheet">
-
-    <style>
-        
-    </style>
 </head>
 <body>
 
@@ -77,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <form action="login.php" method="POST">
             <div class="form-group">
-                <label for="admission_number">Admission Number <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="admission_number" name="admission_number" value="<?php echo isset($admission_number) ? $admission_number : ''; ?>" placeholder="Admission Number" required>
+                <label for="regno">Registration Number <span class="text-danger">*</span></label> <!-- Adjusted label -->
+                <input type="text" class="form-control" id="regno" name="regno" value="<?php echo isset($regno) ? $regno : ''; ?>" placeholder="Registration Number" required>
             </div>
 
             <div class="form-group">
